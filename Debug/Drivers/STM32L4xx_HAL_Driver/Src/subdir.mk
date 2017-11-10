@@ -69,7 +69,7 @@ Drivers/STM32L4xx_HAL_Driver/Src/%.o: ../Drivers/STM32L4xx_HAL_Driver/Src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32L475xx -I"C:/Users/Station13/Documents/GitHub/SPI_Flash/Inc" -I"C:/Users/Station13/Documents/GitHub/SPI_Flash/Drivers/STM32L4xx_HAL_Driver/Inc" -I"C:/Users/Station13/Documents/GitHub/SPI_Flash/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy" -I"C:/Users/Station13/Documents/GitHub/SPI_Flash/Drivers/CMSIS/Device/ST/STM32L4xx/Include" -I"C:/Users/Station13/Documents/GitHub/SPI_Flash/Drivers/CMSIS/Include"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32L475xx -I"C:/Users/Station13/Documents/GitHub/SPIFlash/Inc" -I"C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc" -I"C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy" -I"C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/CMSIS/Device/ST/STM32L4xx/Include" -I"C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/CMSIS/Include"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

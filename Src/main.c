@@ -38,6 +38,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l4xx_hal.h"
+#include <stdlib.h>
 
 /* USER CODE BEGIN Includes */
 #include "spi_flash.h"
@@ -55,7 +56,7 @@ SPI_HandleTypeDef hspi1;
 #define FLASH_ERASE_ADDRESS FLASH_WRITE_ADDRESS
 #define BufferSize 256
 /* Private variables ---------------------------------------------------------*/
-uint8_t TBuffer[BufferSize];
+uint8_t TBuffer[BufferSize] = "this is a test";
 uint8_t RBuffer[BufferSize];
 __IO uint8_t Index = 0x0;
 __IO uint32_t FlashID = 0;
@@ -112,8 +113,8 @@ int main(void)
    	    sFLASH_EraseSector(FLASH_ERASE_ADDRESS);
 
    	    /* Write Tx_Buffer data to SPI FLASH memory */
-   		sFLASH_CS_LOW();
-   	    HAL_SPI_Transmit(&hspi1, TBuffer, BufferSize, 50);
+   		//fsFLASH_CS_LOW();
+   	    //HAL_SPI_Transmit(&hspi1, TBuffer, BufferSize, 50);
    	    sFLASH_WriteBuffer(TBuffer, FLASH_WRITE_ADDRESS, BufferSize);
 
    	    /* Read data from SPI FLASH memory */

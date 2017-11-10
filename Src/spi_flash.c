@@ -71,7 +71,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef *hspi;
+extern SPI_HandleTypeDef hspi1;
 /* Private function prototypes -----------------------------------------------*/
 void sFLASH_LowLevel_DeInit();
 void sFLASH_LowLevel_Init();
@@ -114,10 +114,10 @@ void sFLASH_Init(void)
   SPI_InitStructure.FirstBit = SPI_FIRSTBIT_MSB;
   SPI_InitStructure.CRCPolynomial = 7;
   //SPI_Init(sFLASH_SPI, &SPI_InitStructure);
-  HAL_SPI_Init(hspi);
+  HAL_SPI_Init(&hspi1);
   /*!< Enable the sFLASH_SPI  */
   //SPI_Cmd(sFLASH_SPI, ENABLE);
-  __HAL_SPI_ENABLE(hspi);
+  //__HAL_SPI_ENABLE(hspi1);
 }
 
 /**
@@ -408,15 +408,15 @@ uint8_t sFLASH_SendByte(uint8_t byte)
   /*!< Loop while DR register is not empty */
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_TXE) == RESET);
   int size = sizeof(byte);//(sizeof(byte))/(sizeof(*(byte)));
-  while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE));
+  //while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE));
   /*!< Send byte through the SPI1 peripheral */
   //SPI_I2S_SendData(sFLASH_SPI, byte);
-  HAL_SPI_Transmit(hspi, &byte, size, 50);
+  HAL_SPI_Transmit(&hspi1, &byte, size, 50);
   /*!< Wait to receive a byte */
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_RXNE) == RESET);
-  while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE));
+  //while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE));
   /*!< Return the byte read from the SPI bus */
-  return HAL_SPI_Receive(hspi, &byte, size, 50);;
+  return byte;
 }
 
 /**
@@ -431,15 +431,15 @@ uint16_t sFLASH_SendHalfWord(uint16_t HalfWord)
   //!< Loop while DR register in not emplty
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_TXE) == RESET);
   int size = sizeof(HalfWord);
-  while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE));
+  while(__HAL_SPI_GET_FLAG(hspi1, SPI_FLAG_TXE));
   //!< Send Half Word through the sFLASH peripheral
   //SPI_I2S_SendData(sFLASH_SPI, HalfWord);
-  HAL_SPI_Transmit(hspi, HalfWord, size, 50);
+  HAL_SPI_Transmit(hspi1, HalfWord, size, 50);
   //!< Wait to receive a Half Word
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_RXNE) == RESET);
-  while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE));
+  while(__HAL_SPI_GET_FLAG(hspi1, SPI_FLAG_RXNE));
   //!< Return the Half Word read from the SPI bus
-  return HAL_SPI_Receive(hspi, HalfWord, size, 50);//SPI_I2S_ReceiveData(sFLASH_SPI);
+  return HAL_SPI_Receive(hspi1, HalfWord, size, 50);//SPI_I2S_ReceiveData(sFLASH_SPI);
 }*/
 
 /**
@@ -473,7 +473,7 @@ void sFLASH_WaitForWriteEnd(void)
   sFLASH_CS_LOW();
 
   /*!< Send "Read Status Register" instruction */
-  sFLASH_SendByte(sFLASH_CMD_RDSR);
+  flashstatus = sFLASH_SendByte(sFLASH_CMD_RDSR);
 
   /*!< Loop as long as the memory is busy with a write cycle */
   do
@@ -483,7 +483,7 @@ void sFLASH_WaitForWriteEnd(void)
     flashstatus = sFLASH_SendByte(sFLASH_DUMMY_BYTE);
 
   }
-  while ((flashstatus & sFLASH_WIP_FLAG) == SET); /* Write in progress */
+  while ((flashstatus & sFLASH_WIP_FLAG) == RESET); /* Write in progress */
 
   /*!< Deselect the FLASH: Chip Select high */
   sFLASH_CS_HIGH();
