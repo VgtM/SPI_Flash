@@ -428,17 +428,17 @@ uint8_t sFLASH_SendByte(uint8_t byte)
 /*
 uint16_t sFLASH_SendHalfWord(uint16_t HalfWord)
 {
-  /*!< Loop while DR register in not emplty
+  //!< Loop while DR register in not emplty
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_TXE) == RESET);
   int size = sizeof(HalfWord);
   while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE));
-  /*!< Send Half Word through the sFLASH peripheral
+  //!< Send Half Word through the sFLASH peripheral
   //SPI_I2S_SendData(sFLASH_SPI, HalfWord);
   HAL_SPI_Transmit(hspi, HalfWord, size, 50);
-  /*!< Wait to receive a Half Word
+  //!< Wait to receive a Half Word
   //while (SPI_I2S_GetFlagStatus(sFLASH_SPI, SPI_I2S_FLAG_RXNE) == RESET);
   while(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE));
-  /*!< Return the Half Word read from the SPI bus
+  //!< Return the Half Word read from the SPI bus
   return HAL_SPI_Receive(hspi, HalfWord, size, 50);//SPI_I2S_ReceiveData(sFLASH_SPI);
 }*/
 
