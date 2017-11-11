@@ -56,35 +56,16 @@
 #define sFLASH_DUMMY_BYTE         0xA5
 #define sFLASH_SPI_PAGESIZE       0x100
 
-/*#define sFLASH_M25P128_ID         0x202018
-#define sFLASH_M25P64_ID          0x202017*/
-
 /* M25P FLASH SPI Interface pins  */
 #define sFLASH_SPI                           SPI2
-//#define sFLASH_SPI_CLK                       RCC_APB1Periph_SPI2
-//#define sFLASH_SPI_CLK_INIT                  RCC_APB1PeriphClockCmd
-
 #define sFLASH_SPI_SCK_PIN                   GPIO_PIN_1
 #define sFLASH_SPI_SCK_GPIO_PORT             GPIOC
-//#define sFLASH_SPI_SCK_GPIO_CLK              RCC_AHB1Periph_GPIOI
-//#define sFLASH_SPI_SCK_SOURCE                GPIO_PinSource1
-//#define sFLASH_SPI_SCK_AF                    GPIO_AF_SPI2
-
 #define sFLASH_SPI_MISO_PIN                  GPIO_PIN_2
 #define sFLASH_SPI_MISO_GPIO_PORT            GPIOC
-//#define sFLASH_SPI_MISO_GPIO_CLK             RCC_AHB1Periph_GPIOI
-//#define sFLASH_SPI_MISO_SOURCE               GPIO_PinSource2
-//#define sFLASH_SPI_MISO_AF                   GPIO_AF_SPI2
-
 #define sFLASH_SPI_MOSI_PIN                  GPIO_PIN_3
 #define sFLASH_SPI_MOSI_GPIO_PORT            GPIOC
-//#define sFLASH_SPI_MOSI_GPIO_CLK             RCC_AHB1Periph_GPIOI
-//#define sFLASH_SPI_MOSI_SOURCE               GPIO_PinSource3
-//#define sFLASH_SPI_MOSI_AF                   GPIO_AF_SPI2
-
 #define sFLASH_CS_PIN                        GPIO_PIN_8
 #define sFLASH_CS_GPIO_PORT                  GPIOC
-//#define sFLASH_CS_GPIO_CLK                   RCC_AHB1Periph_GPIOC
 
 /* Exported macro ------------------------------------------------------------*/
 /* Select sFLASH: Chip Select pin low */

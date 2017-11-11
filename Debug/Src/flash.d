@@ -1,5 +1,5 @@
-Src/main.o: ../Src/main.c \
- C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/main.h \
+Src/flash.o: ../Src/flash.c \
+ C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/flash.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/stm32l4xx_hal_conf.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/main.h \
@@ -29,11 +29,9 @@ Src/main.o: ../Src/main.c \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h \
- C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
- C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/spi_flash.h \
- C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/flash.h
+ C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h
 
-C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/main.h:
+C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/flash.h:
 
 C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 
@@ -94,7 +92,3 @@ C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/st
 C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h:
 
 C:/Users/Station13/Documents/GitHub/SPIFlash/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
-
-C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/spi_flash.h:
-
-C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/flash.h:

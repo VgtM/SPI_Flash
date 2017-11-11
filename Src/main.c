@@ -42,6 +42,10 @@
 
 /* USER CODE BEGIN Includes */
 #include "spi_flash.h"
+#include "flash.h"
+#include "lsm6ds3.h"
+#include "buffer.h"
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -60,6 +64,9 @@ uint8_t TBuffer[BufferSize] = "this is a test";
 uint8_t RBuffer[BufferSize];
 __IO uint8_t Index = 0x0;
 __IO uint32_t FlashID = 0;
+triplet acc_reading;
+triplet gyro_reading1;
+triplet gyro_reading2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,55 +111,55 @@ int main(void)
   MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
-  FlashID = sFLASH_ReadID();
-  /* Check the SPI Flash ID */
-   	  if (FlashID/*the flash ID*/)
-   	  {
-   	    /* Perform a write in the Flash followed by a read of the written data */
-   	    /* Erase SPI FLASH Sector to write on */
-   	    sFLASH_EraseSector(FLASH_ERASE_ADDRESS);
+  //fetch(&write_buffer, &acc_reading);
 
-   	    /* Write Tx_Buffer data to SPI FLASH memory */
-   		//fsFLASH_CS_LOW();
-   	    //HAL_SPI_Transmit(&hspi1, TBuffer, BufferSize, 50);
-   	    sFLASH_WriteBuffer(TBuffer, FLASH_WRITE_ADDRESS, BufferSize);
+  //verify_flash_memory(&hspi1);
+  uint8_t write_buff[PAGE_SIZE];
+  uint8_t read_buff[PAGE_SIZE];
+  for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
+  {
+	  write_buff[p0]=p0;
+	  read_buff[p0]  = 0;
+  }
 
-   	    /* Read data from SPI FLASH memory */
-   	    sFLASH_ReadBuffer(RBuffer, FLASH_READ_ADDRESS, BufferSize);
-   	    //HAL_SPI_Receive(&hspi1, RBuffer, BufferSize, 50);
-   	    /* Check the correctness of written data */
-   	    //sFLASH_CS_HIGH();
-   	    int TransferStatus1 = Buffercmp(TBuffer, RBuffer, BufferSize);
-   	    if(TransferStatus1 == Fail){
-   	    	_Error_Handler(__FILE__, __LINE__);
-   	    }
-   	    /* TransferStatus1 = PASSED, if the transmitted and received data by SPI1
-   	       are the same */
-   	    /* TransferStatus1 = FAILED, if the transmitted and received data by SPI1
-   	       are different */
+  Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buff, 1);
 
-   	    /* Perform an erase in the Flash followed by a read of the written data */
-   	    /* Erase SPI FLASH Sector to write on */
-   	    sFLASH_EraseSector(FLASH_ERASE_ADDRESS);
 
-   	    /* Read data from SPI FLASH memory */
-   	    sFLASH_ReadBuffer(RBuffer, FLASH_READ_ADDRESS, BufferSize);
+  Master_ReadFromFlash( &hspi1,FLASH_WRITE_ADDRESS,read_buff,PAGE_SIZE);
 
-   	    /* Check the correctness of erasing operation data */
-   	    for (Index = 0; Index < BufferSize; Index++)
-   	    {
-   	      if (RBuffer[Index] != 0xFF)
-   	      {
-   	        int TransferStatus2 = Fail;
-   	        _Error_Handler(__FILE__, __LINE__);
-   	      }
-   	    }
-   	    /* TransferStatus2 = PASSED, if the specified sector part is erased */
-   	    /* TransferStatus2 = FAILED, if the specified sector part is not well erased */
-   	  }
-   	  else{
-   		  _Error_Handler(__FILE__, __LINE__);
-   	  }
+
+
+
+
+
+
+
+  /*             RUI           */
+  /*your code is on notepad++ on your right, but our thing is now working, it's reading a page, and write a page*/
+  for(int i = 0; i < PAGE_SIZE; i++){
+	  if(read_buff[i] != i){
+		  Error_Handler();
+	  }
+  }
+  int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
+
+  if(BufferStatus != Success){
+	  Error_Handler();
+  }
+
+  /* WRITE SOME UNNCESSARY CODE DOWN HERE SO THAT WE CAN SET A BREAK POINT TO SEE THE CONTENT OF READ_BUFF. */
+
+  /* IF THE CONTENT OF READ_BUFF IS READ_BUFF[i] = i then we're all good*/
+  /* ie. READ_BUFF[0] = 0, READ_BUFF[1] = 1 and so on*/
+
+
+
+
+
+
+
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
