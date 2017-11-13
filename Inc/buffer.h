@@ -14,7 +14,7 @@
 #define BUFFER_FULL 0x01
 #define BUFFER_EMPTY 0x02
 #define BUFFER_FAILED 0xFF
-#define SIZE 200
+#define SIZE 0x200
 
 typedef struct triplet {
 	float x;
@@ -33,5 +33,6 @@ int add(triple_ring_buffer* buffer,triplet dat);
 int fetch(triple_ring_buffer* buffer, triplet* xyzTriplet);
 int peek(triple_ring_buffer* buffer);
 int isFull(triple_ring_buffer* buffer);
+int fetchBuffer(triple_ring_buffer* buffer1, float* buffer2, float* buffer3, float* buffer4);
 
 #endif /* BUFFER_H_ */

@@ -74,3 +74,18 @@ int isFull(triple_ring_buffer* buffer)
 	if((buffer->tail + 1) % SIZE == buffer->head) return BUFFER_FULL;
 	else return BUFFER_AVAILABLE;
 }
+
+int fetchBuffer(triple_ring_buffer* buffer1, float* buffer2, float* buffer3, float* buffer4){
+	if(peek(buffer1) == BUFFER_AVAILABLE)
+	{
+		*buffer2 = (buffer1->tripletBuffer[buffer1->head]).x;
+		*buffer3 = (buffer1->tripletBuffer[buffer1->head]).y;
+		*buffer4 = (buffer1->tripletBuffer[buffer1->head]).z;
+		buffer1->head = (buffer1->head + 1) % SIZE;
+
+		return BUFFER_SUCCESS;
+	}
+
+	return BUFFER_FAILED;
+}
+

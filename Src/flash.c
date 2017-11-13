@@ -6,6 +6,7 @@
  */
 
 #include "flash.h"
+#include "buffer.h"
 
 
 FLASH_State verify_flash_memory(SPI_HandleTypeDef* hspi)
