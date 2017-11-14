@@ -158,7 +158,7 @@ FLASH_State Master_ReadFromFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, ui
  commands[3]=(flash_addr>>8)&0xff; //3rd byte
  commands[4]=(flash_addr)&0xff; //last byte
  FLASH_BLOCK1_CHIP_ENABLE(); //enable the chip, CS=0
- if(HAL_SPI_TransmitReceive(hspi, commands,RxDummy, size+5,1000) != HAL_OK)
+ if(HAL_SPI_TransmitReceive(hspi, commands,RxDummy, size+5,1000) != HAL_OK)//was HAL_OK
  {
 		flash_status = FLASH_ERROR;
 		_Error_Handler(__FILE__, __LINE__);

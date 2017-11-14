@@ -20,7 +20,6 @@
 "Src/flash.o"
 "Src/lsm6ds3.o"
 "Src/main.o"
-"Src/spi_flash.o"
 "Src/stm32l4xx_hal_msp.o"
 "Src/stm32l4xx_it.o"
 "Src/system_stm32l4xx.o"

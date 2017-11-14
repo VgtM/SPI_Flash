@@ -39,11 +39,8 @@
 #include "main.h"
 #include "stm32l4xx_hal.h"
 #include <stdlib.h>
-#include "stm32l4xx_hal_i2c.h"
-#include "stm32l4xx_hal_tim.h"
 
 /* USER CODE BEGIN Includes */
-#include "spi_flash.h"
 #include "flash.h"
 #include "lsm6ds3.h"
 #include "buffer.h"
@@ -52,8 +49,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
-I2C_HandleTypeDef hi2c1;
-TIM_HandleTypeDef htim3;
+
 /* USER CODE BEGIN PV */
 /* Private define */
 #define Fail 0x00
@@ -70,21 +66,6 @@ __IO uint32_t FlashID = 0;
 triplet acc_reading;
 triplet gyro_reading1;
 triplet gyro_reading2;
-triple_ring_buffer angular_velocity_buffer_sternum;
-triple_ring_buffer angular_velocity_buffer_waist;
-uint8_t write_buff[PAGE_SIZE];
-//float write_buffx[PAGE_SIZE];
-//float write_buffy[PAGE_SIZE];
-//float write_buffz[PAGE_SIZE];
-uint8_t read_buff[PAGE_SIZE];
-//float read_buffx[PAGE_SIZE];
-//float read_buffy[PAGE_SIZE];
-//float read_buffz[PAGE_SIZE];
-triplet angle_i;
-triplet angular_velocity_i;
-/*Accelerometer initialization routine*/
-LSM6DS3_StatusTypedef acc_init_status, gyro1_init_status, gyro2_init_status;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,7 +76,6 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 int Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
-//int Buffercmp(float* PBuffer1, float* pBuffer2, uint16_t BufferLength);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -122,8 +102,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  init_buffer(&angular_velocity_buffer_sternum);
-  init_buffer(&angular_velocity_buffer_waist);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -132,59 +111,41 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  /*Start timer interrupt*/
-   HAL_TIM_Base_Start_IT(&htim3);
+  verify_flash_memory(&hspi1);
+  uint8_t write_buff[PAGE_SIZE];
+  uint8_t read_buff[PAGE_SIZE];
+  for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
+  {
+	  write_buff[p0]=p0;
+	  read_buff[p0]  = 0;
+  }
+
+  Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buff, 1);
+
+
+  Master_ReadFromFlash( &hspi1,FLASH_WRITE_ADDRESS,read_buff,PAGE_SIZE);
+
+
+  int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
+
+  if(BufferStatus != Success){
+	  Error_Handler();
+  }
+
 
   /* USER CODE END 2 */
-   triplet acc_reading;
-   triplet gyro_reading1;
-   triplet gyro_reading2;
-   angular_velocity_i.x = 0;
-   angular_velocity_i.y = 0;
-   angular_velocity_i.z = 0;
-   triplet angle_f;
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-   gyro1_init_status = init_gyroscope(&hi2c1,SENSOR_1,dps_250,rate416hz);
-   gyro2_init_status = init_gyroscope(&hi2c1,SENSOR_2,dps_250,rate416hz);
   while (1)
   {
   /* USER CODE END WHILE */
-	  if(peek(&angular_velocity_buffer_sternum) == BUFFER_AVAILABLE)
-	  	  {
-	  		  fetch(&angular_velocity_buffer_sternum, &gyro_reading1);
-	  		  //fetchBuffer(&angular_velocity_buffer_sternum, &write_buffx, &write_buffy, &write_buffz);
-	  	  }
+
   /* USER CODE BEGIN 3 */
 
   }
   /* USER CODE END 3 */
-  //verify_flash_memory(&hspi1);
 
-  	/*triple_ring_buffer write_buff[PAGE_SIZE];
-  	triple_ring_buffer read_buff[PAGE_SIZE];*/
-  	/*while(write_buff[i] != NULL){
-  		write_buff[i] = angular_velocity_buffer_sternum->next;
-  	}*/
-  	for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
-    {
-  	  //write_buff[p0]=p0;
-  	  read_buff[p0]  = 0;
-    }
-
-    Master_WriteToFlash_Page(&hspi1, FLASH_WRITE_ADDRESS, write_buff, 1);
-    Master_ReadFromFlash( &hspi1, FLASH_WRITE_ADDRESS, read_buff, PAGE_SIZE);
-
-    for(int i = 0; i < PAGE_SIZE; i++){
-    	  if(read_buff[i] != i){
-    		  Error_Handler();
-    	  }
-      }
-      int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
-
-      if(BufferStatus != Success){
-    	  Error_Handler();
-      }
 }
 
 /** System Clock Configuration

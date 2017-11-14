@@ -8,7 +8,6 @@ C_SRCS += \
 ../Src/flash.c \
 ../Src/lsm6ds3.c \
 ../Src/main.c \
-../Src/spi_flash.c \
 ../Src/stm32l4xx_hal_msp.c \
 ../Src/stm32l4xx_it.c \
 ../Src/system_stm32l4xx.c 
@@ -18,7 +17,6 @@ OBJS += \
 ./Src/flash.o \
 ./Src/lsm6ds3.o \
 ./Src/main.o \
-./Src/spi_flash.o \
 ./Src/stm32l4xx_hal_msp.o \
 ./Src/stm32l4xx_it.o \
 ./Src/system_stm32l4xx.o 
@@ -28,7 +26,6 @@ C_DEPS += \
 ./Src/flash.d \
 ./Src/lsm6ds3.d \
 ./Src/main.d \
-./Src/spi_flash.d \
 ./Src/stm32l4xx_hal_msp.d \
 ./Src/stm32l4xx_it.d \
 ./Src/system_stm32l4xx.d 
