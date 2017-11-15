@@ -38,12 +38,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l4xx_hal.h"
-#include <stdlib.h>
 
 /* USER CODE BEGIN Includes */
 #include "flash.h"
 #include "lsm6ds3.h"
 #include "buffer.h"
+#include "util.h"
 
 /* USER CODE END Includes */
 
@@ -52,7 +52,7 @@ SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 /* Private define */
-#define Fail 0x00
+#define Fail 0x0
 #define Success 0x01
 #define FLASH_WRITE_ADDRESS 0x04000000
 #define FLASH_READ_ADDRESS FLASH_WRITE_ADDRESS
@@ -112,27 +112,69 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   verify_flash_memory(&hspi1);
-  uint8_t write_buff[PAGE_SIZE];
-  uint8_t read_buff[PAGE_SIZE];
+  int write_buff_idx = 0;
+
+  uint8_t write_buff[PAGE_SIZE] = {0};
+  uint8_t read_buff[PAGE_SIZE] = {0};
+
+  float read_converted[PAGE_SIZE/4]=  {0};
+
   for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
   {
-	  write_buff[p0]=p0;
+	  write_buff[p0]=PAGE_SIZE- p0;
 	  read_buff[p0]  = 0;
   }
 
+  /*float debug_array[128];
+
+  for(uint i=0; i<128;i++)
+  {
+	  fp_to_uint_array(i+0.123,write_buff,&write_buff_idx);
+	  debug_array[i] = i+0.123;
+  }
+
+  for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
+  {
+	  read_buff[p0]  = 0;
+  }*/
+
+
+
+  /* ERASING FLASH WILL BASICALLY WRITE ALL 1'S INTO THE SECTOR
+   * SO IF ALL GOES WELL, BY ERASING AND READING (SKIP WRITING)
+   * YOU SHOULD BE ABLE TO READ ALL 1'S FROM THE FLASH. BUT WE
+   * ALWAYS GET THE SAME VALUE BACK WHEN READ AFTER ERASE. NO
+   * IDEA WHY THIS IS HAPPENING. MAYBE THE ERASE PART IS WRONG AND
+   * NOT THE READ AND WRITE?*/
+
+
+
+  master_EraseFlash(&hspi1,FLASH_WRITE_ADDRESS,1);
   Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buff, 1);
 
-
+HAL_Delay(5000);
+  /* check if the flash flag is busy*/
+  /*while(SPI_GetFlagStatus(SPI1, SPI_FLAG_BSY) != SET){
+  }*/
   Master_ReadFromFlash( &hspi1,FLASH_WRITE_ADDRESS,read_buff,PAGE_SIZE);
 
 
-  int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
+  merge_uint_to_fp(read_buff,read_converted,128);
 
-  if(BufferStatus != Success){
+  //int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
+
+  /*if(BufferStatus != Success){
 	  Error_Handler();
+  }*/
+
+  /*for(int k = 0;k<128;k++)
+  {
+	  if(debug_array[k] != read_converted[k])
+	  {
+		  Error_Handler();
+	  }
   }
-
-
+*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -269,19 +311,10 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while(1)
   {
   }
   /* USER CODE END Error_Handler_Debug */ 
-}
-
-int Buffercmp(uint8_t* TBuffer, uint8_t* RBuffer, uint16_t BufferLength){
-	for(int i = 0; i < BufferLength; i++){
-		if(TBuffer[i] != RBuffer[i]){
-			return Fail;
-		}
-	}
-	return Success;
 }
 
 #ifdef USE_FULL_ASSERT

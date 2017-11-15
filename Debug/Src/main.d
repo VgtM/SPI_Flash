@@ -33,7 +33,8 @@ Src/main.o: ../Src/main.c \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/flash.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/lsm6ds3.h \
  C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/buffer.h \
- C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/buffer.h
+ C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/buffer.h \
+ C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/util.h
 
 C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/main.h:
 
@@ -104,3 +105,5 @@ C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/lsm6ds3.h:
 C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/buffer.h:
 
 C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/buffer.h:
+
+C:/Users/Station13/Documents/GitHub/SPIFlash/Inc/util.h:

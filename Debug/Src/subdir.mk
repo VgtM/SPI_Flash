@@ -10,7 +10,8 @@ C_SRCS += \
 ../Src/main.c \
 ../Src/stm32l4xx_hal_msp.c \
 ../Src/stm32l4xx_it.c \
-../Src/system_stm32l4xx.c 
+../Src/system_stm32l4xx.c \
+../Src/util.c 
 
 OBJS += \
 ./Src/buffer.o \
@@ -19,7 +20,8 @@ OBJS += \
 ./Src/main.o \
 ./Src/stm32l4xx_hal_msp.o \
 ./Src/stm32l4xx_it.o \
-./Src/system_stm32l4xx.o 
+./Src/system_stm32l4xx.o \
+./Src/util.o 
 
 C_DEPS += \
 ./Src/buffer.d \
@@ -28,7 +30,8 @@ C_DEPS += \
 ./Src/main.d \
 ./Src/stm32l4xx_hal_msp.d \
 ./Src/stm32l4xx_it.d \
-./Src/system_stm32l4xx.d 
+./Src/system_stm32l4xx.d \
+./Src/util.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
