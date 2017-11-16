@@ -117,23 +117,23 @@ int main(void)
   uint8_t write_buff[PAGE_SIZE] = {0};
   uint8_t read_buff[PAGE_SIZE] = {0};
 
-  float read_converted[PAGE_SIZE/4]=  {0};
+  uint32_t read_converted[PAGE_SIZE/4]=  {0};
 
   for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
   {
-	  write_buff[p0]=PAGE_SIZE- p0;
+	  write_buff[p0]=p0;
 	  read_buff[p0]  = 0;
   }
 
-  /*float debug_array[128];
+  uint32_t debug_array[128] = {0};
 
   for(uint i=0; i<128;i++)
   {
-	  fp_to_uint_array(i+0.123,write_buff,&write_buff_idx);
-	  debug_array[i] = i+0.123;
+	  fp_to_uint_array((i+0.123)*1000,write_buff,&write_buff_idx);
+	  debug_array[i] = (i+0.123)*1000;
   }
 
-  for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
+  /*for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
   {
 	  read_buff[p0]  = 0;
   }*/
@@ -152,7 +152,7 @@ int main(void)
   master_EraseFlash(&hspi1,FLASH_WRITE_ADDRESS,1);
   Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buff, 1);
 
-HAL_Delay(5000);
+  HAL_Delay(2000);
   /* check if the flash flag is busy*/
   /*while(SPI_GetFlagStatus(SPI1, SPI_FLAG_BSY) != SET){
   }*/
@@ -167,14 +167,13 @@ HAL_Delay(5000);
 	  Error_Handler();
   }*/
 
-  /*for(int k = 0;k<128;k++)
+  for(int k = 0;k<128;k++)
   {
 	  if(debug_array[k] != read_converted[k])
 	  {
 		  Error_Handler();
 	  }
   }
-*/
   /* USER CODE END 2 */
 
   /* Infinite loop */

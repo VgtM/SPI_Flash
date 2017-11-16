@@ -9,7 +9,7 @@
 #include "util.h"
 
 
-void fp_to_uint_array(float fp, uint8_t* arr, int* index)
+void fp_to_uint_array(uint32_t fp, uint8_t* arr, int* index)
 {
 	float f = fp;
 	uint8_t* intermediate_fp;
@@ -28,11 +28,11 @@ void fp_to_uint_array(float fp, uint8_t* arr, int* index)
 	return;
 }
 
-void merge_uint_to_fp(uint8_t* uint_arr, float* fp_arr,int float_arr_size)
+void merge_uint_to_fp(uint8_t* uint_arr, uint32_t* fp_arr,int float_arr_size)
 {
 	for(int i  = 0; i<float_arr_size;i++)
 	{
-		fp_arr[i] = (float)(uint_arr[i*4]<<24 | uint_arr[4*i+1]<<16 | uint_arr[4*i+2]<<8 | uint_arr[4*i+3]);
+		fp_arr[i] = (uint32_t)(uint_arr[i*4] | uint_arr[4*i+1]<<8 | uint_arr[4*i+2]<<16 | uint_arr[4*i+3]<<24);
 	}
 
 }

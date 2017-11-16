@@ -46,7 +46,7 @@ FLASH_State master_EraseFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, uint1
 	FLASH_BLOCK1_CHIP_ENABLE();
 
 	//Enable write to erase
-	if(HAL_SPI_TransmitReceive(hspi, commands,rec_temp, 5, 1000) != HAL_OK)
+	if(HAL_SPI_TransmitReceive(hspi, commands,rec_temp, 1, 1000) != HAL_OK)
 	{
 		flash_status = FLASH_ERROR;
 		_Error_Handler(__FILE__, __LINE__);
