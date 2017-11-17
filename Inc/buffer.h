@@ -34,5 +34,6 @@ int fetch(triple_ring_buffer* buffer, triplet* xyzTriplet);
 int peek(triple_ring_buffer* buffer);
 int isFull(triple_ring_buffer* buffer);
 int fetchBuffer(triple_ring_buffer* buffer1, float* buffer2, float* buffer3, float* buffer4);
+int randGyroReading(triplet* buffer);
 
 #endif /* BUFFER_H_ */
