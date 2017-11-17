@@ -38,52 +38,32 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l4xx_hal.h"
-#include <stdlib.h>
-#include "stm32l4xx_hal_i2c.h"
-#include "stm32l4xx_hal_tim.h"
 
 /* USER CODE BEGIN Includes */
-#include "spi_flash.h"
 #include "flash.h"
 #include "lsm6ds3.h"
 #include "buffer.h"
+#include "util.h"
+#include "user_interface.h"
 
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c3;
+Data_CollectState data_collection_state;
 SPI_HandleTypeDef hspi1;
-I2C_HandleTypeDef hi2c1;
-TIM_HandleTypeDef htim3;
+
 /* USER CODE BEGIN PV */
 /* Private define */
-#define Fail 0x00
+#define Fail 0x0
 #define Success 0x01
 #define FLASH_WRITE_ADDRESS 0x04000000
 #define FLASH_READ_ADDRESS FLASH_WRITE_ADDRESS
 #define FLASH_ERASE_ADDRESS FLASH_WRITE_ADDRESS
 #define BufferSize 256
+
 /* Private variables ---------------------------------------------------------*/
-uint8_t TBuffer[BufferSize] = "this is a test";
-uint8_t RBuffer[BufferSize];
-__IO uint8_t Index = 0x0;
-__IO uint32_t FlashID = 0;
-triplet acc_reading;
-triplet gyro_reading1;
-triplet gyro_reading2;
-triple_ring_buffer angular_velocity_buffer_sternum;
-triple_ring_buffer angular_velocity_buffer_waist;
-uint8_t write_buff[PAGE_SIZE];
-//float write_buffx[PAGE_SIZE];
-//float write_buffy[PAGE_SIZE];
-//float write_buffz[PAGE_SIZE];
-uint8_t read_buff[PAGE_SIZE];
-//float read_buffx[PAGE_SIZE];
-//float read_buffy[PAGE_SIZE];
-//float read_buffz[PAGE_SIZE];
-triplet angle_i;
-triplet angular_velocity_i;
-/*Accelerometer initialization routine*/
-LSM6DS3_StatusTypedef acc_init_status, gyro1_init_status, gyro2_init_status;
+triple_ring_buffer ringBuffer;
 
 /* USER CODE END PV */
 
@@ -91,11 +71,10 @@ LSM6DS3_StatusTypedef acc_init_status, gyro1_init_status, gyro2_init_status;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_I2C3_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-int Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
-//int Buffercmp(float* PBuffer1, float* pBuffer2, uint16_t BufferLength);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -122,69 +101,132 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  init_buffer(&angular_velocity_buffer_sternum);
-  init_buffer(&angular_velocity_buffer_waist);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_I2C3_Init();
 
   /* USER CODE BEGIN 2 */
+  init_buffer(&ringBuffer);
 
-  /*Start timer interrupt*/
-   HAL_TIM_Base_Start_IT(&htim3);
+
+  int write_buff_idx = 0;
+  uint8_t write_buff[PAGE_SIZE] = {0};
+  uint8_t read_buff[PAGE_SIZE] = {0};
+  triplet gyro1_reading;
+  triplet gyro2_reading;
+  Page_fullState page_state = PAGE_AVAILABLE;
+  data_collection_state = COLLECTION_PAUSED;
+
+  /*TODO: Determine the first page address to write to*/
+  /*the current address is a dummy address*/
+  uint32_t current_page_address = FLASH_WRITE_ADDRESS;
+
+  int sample_count = 0;
+
+  uint32_t read_converted[PAGE_SIZE/4]=  {0};
+
+
+  uint32_t debug_array[128] = {0};
+
+  LSM6DS3_StatusTypedef gyro1_init_status,gyro2_init_status;
+/*
+  gyro1_init_status = init_gyroscope(&hi2c3,SENSOR_1,dps_250,rate416hz);
+  gyro2_init_status = init_gyroscope(&hi2c3,SENSOR_2,dps_250,rate416hz);
+
+
+  if(gyro1_init_status != LSM6DS3_OK)
+  {
+	  _Error_Handler(__FILE__, __LINE__);
+  }
+
+  if(gyro2_init_status != LSM6DS3_OK)
+  {
+	  _Error_Handler(__FILE__, __LINE__);
+  }
+*/
+
+  /*
+  master_EraseFlash(&hspi1,FLASH_WRITE_ADDRESS,1);
+  Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buffx, 1);
+
+  HAL_Delay(2000);
+
+  Master_ReadFromFlash( &hspi1,FLASH_WRITE_ADDRESS,read_buff,PAGE_SIZE);
+*/
+
+  //merge_uint_to_fp(read_buff,read_converted,128);
 
   /* USER CODE END 2 */
-   triplet acc_reading;
-   triplet gyro_reading1;
-   triplet gyro_reading2;
-   angular_velocity_i.x = 0;
-   angular_velocity_i.y = 0;
-   angular_velocity_i.z = 0;
-   triplet angle_f;
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-   gyro1_init_status = init_gyroscope(&hi2c1,SENSOR_1,dps_250,rate416hz);
-   gyro2_init_status = init_gyroscope(&hi2c1,SENSOR_2,dps_250,rate416hz);
   while (1)
   {
   /* USER CODE END WHILE */
-	  if(peek(&angular_velocity_buffer_sternum) == BUFFER_AVAILABLE)
-	  	  {
-	  		  fetch(&angular_velocity_buffer_sternum, &gyro_reading1);
-	  		  //fetchBuffer(&angular_velocity_buffer_sternum, &write_buffx, &write_buffy, &write_buffz);
-	  	  }
+
   /* USER CODE BEGIN 3 */
+
+	  if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9))
+	  {
+		  //SWITCH 1 = PAUSE
+		  data_collection_state = COLLECTION_PAUSED;
+	  }
+	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))
+	  {
+		  //SWITCH 2 = RUN
+		  data_collection_state = COLLECTION_RUNNING;
+	  }
+
+	  //PAUSING
+	  if(data_collection_state == COLLECTION_PAUSED)
+	  {
+		  //TURN ON A PAUSING LED??
+		  //PB12 = pausing led
+		  //PB14 = running led
+		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_12,GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
+	  }
+	  //RUNNING
+	  else
+	  {
+		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_12,GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
+
+		  if(page_state == PAGE_AVAILABLE)
+		  {
+			  //gyro_read_xyz(&hi2c3,SENSOR_1,&gyro1_reading);
+			  //gyro_read_xyz(&hi2c3,SENSOR_2,&gyro2_reading);
+			  randGyroReading(&gyro1_reading);
+			  randGyroReading(&gyro2_reading);
+			  fill_array_with_triplet(write_buff, gyro1_reading, 0);
+			  fill_array_with_triplet(write_buff, gyro2_reading, 0);
+			  sample_count += 1;
+			  if(sample_count >= 21)
+			  {
+				  page_state = PAGE_FULL;
+			  }
+		  }
+		  if(page_state == PAGE_FULL)
+		  {
+			  if(current_page_address )
+			  {
+				  master_EraseFlash(&hspi1,current_page_address,1);
+			  }
+			  //Master_WriteToFlash_Page(&hspi1,FLASH_WRITE_ADDRESS, write_buff, 1);
+			  page_state = PAGE_AVAILABLE;
+			  current_page_address += 512;
+			  /*if the next page is in the new sector*/
+		  }
+	  }
+
 
   }
   /* USER CODE END 3 */
-  //verify_flash_memory(&hspi1);
 
-  	/*triple_ring_buffer write_buff[PAGE_SIZE];
-  	triple_ring_buffer read_buff[PAGE_SIZE];*/
-  	/*while(write_buff[i] != NULL){
-  		write_buff[i] = angular_velocity_buffer_sternum->next;
-  	}*/
-  	for(uint16_t p0=0;p0<PAGE_SIZE;p0++)
-    {
-  	  //write_buff[p0]=p0;
-  	  read_buff[p0]  = 0;
-    }
-
-    Master_WriteToFlash_Page(&hspi1, FLASH_WRITE_ADDRESS, write_buff, 1);
-    Master_ReadFromFlash( &hspi1, FLASH_WRITE_ADDRESS, read_buff, PAGE_SIZE);
-
-    for(int i = 0; i < PAGE_SIZE; i++){
-    	  if(read_buff[i] != i){
-    		  Error_Handler();
-    	  }
-      }
-      int BufferStatus = Buffercmp(write_buff, read_buff, PAGE_SIZE);
-
-      if(BufferStatus != Success){
-    	  Error_Handler();
-      }
 }
 
 /** System Clock Configuration
@@ -194,6 +236,7 @@ void SystemClock_Config(void)
 
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
@@ -221,6 +264,13 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C3;
+  PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
     /**Configure the main internal regulator output voltage 
     */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
@@ -238,6 +288,40 @@ void SystemClock_Config(void)
 
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+}
+
+/* I2C3 init function */
+static void MX_I2C3_Init(void)
+{
+
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x00000E14;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Analogue filter 
+    */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Digital filter 
+    */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
 }
 
 /* SPI1 init function */
@@ -280,11 +364,22 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : PB12 PB13 PB14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC7 PC8 */
   GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8;
@@ -292,6 +387,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
@@ -308,19 +415,10 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while(1)
   {
   }
   /* USER CODE END Error_Handler_Debug */ 
-}
-
-int Buffercmp(uint8_t* TBuffer, uint8_t* RBuffer, uint16_t BufferLength){
-	for(int i = 0; i < BufferLength; i++){
-		if(TBuffer[i] != RBuffer[i]){
-			return Fail;
-		}
-	}
-	return Success;
 }
 
 #ifdef USE_FULL_ASSERT
