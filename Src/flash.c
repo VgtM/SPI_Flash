@@ -64,7 +64,7 @@ FLASH_State master_EraseFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, uint1
 		commands[4] = (flash_addr) & 0xff;
 
 		FLASH_BLOCK1_CHIP_ENABLE();
-		if(HAL_SPI_TransmitReceive(hspi, commands,rec_temp, 1, 1000) != HAL_OK)
+		if(HAL_SPI_TransmitReceive(hspi, commands,rec_temp, 5, 1000) != HAL_OK)
 		{
 			flash_status = FLASH_ERROR;
 			_Error_Handler(__FILE__, __LINE__);
@@ -92,7 +92,7 @@ FLASH_State Master_WriteToFlash_Page(SPI_HandleTypeDef* hspi,uint32_t flash_addr
 {
 	//enable writing first
 	//send command to chip
-	uint8_t commands[10+PAGE_SIZE];
+	uint8_t commands[5+PAGE_SIZE];
 	uint8_t RxDummy[2048];//max 2kB at a time
 	FLASH_State flash_status = FLASH_AVAILABLE;
 	uint8_t ReceiveTemp[7];
@@ -149,8 +149,8 @@ FLASH_State Master_ReadFromFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, ui
 {
  //enable writing first
 //send command to chip
- uint8_t commands[10+PAGE_SIZE*4];
- uint8_t RxDummy[10+PAGE_SIZE*4];//max 1kB at a time
+ uint8_t commands[5+PAGE_SIZE];
+ uint8_t RxDummy[5+PAGE_SIZE] = {0};//max 1kB at a time
 	FLASH_State flash_status = FLASH_AVAILABLE;
  commands[0]=READ4;//page read
  commands[1]=(flash_addr>>24)&0xff; //highest byte first
@@ -158,7 +158,7 @@ FLASH_State Master_ReadFromFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, ui
  commands[3]=(flash_addr>>8)&0xff; //3rd byte
  commands[4]=(flash_addr)&0xff; //last byte
  FLASH_BLOCK1_CHIP_ENABLE(); //enable the chip, CS=0
- if(HAL_SPI_TransmitReceive(hspi, commands,RxDummy, size+5,1000) != HAL_OK)
+ if(HAL_SPI_TransmitReceive(hspi, commands,RxDummy, size+5,1000) != HAL_OK)//was HAL_OK
  {
 		flash_status = FLASH_ERROR;
 		_Error_Handler(__FILE__, __LINE__);
@@ -181,4 +181,26 @@ FLASH_State Master_ReadFromFlash(SPI_HandleTypeDef* hspi,uint32_t flash_addr, ui
  }
 //done
  return flash_status;
+}
+
+FlagStatus SPI_GetFlagStatus(SPI_TypeDef* SPIx, uint16_t SPI_FLAG)
+{
+   FlagStatus bitstatus = RESET;
+   /* Check the parameters */
+   /*assert_param(IS_SPI_ALL_PERIPH_EXT(SPIx));
+   assert_param(IS_SPI_GET_FLAG(SPI_I2S_FLAG));*/
+
+   /* Check the status of the specified SPI flag */
+   if ((SPIx->SR & SPI_FLAG) != (uint16_t)RESET)
+   {
+     /* SPI_I2S_FLAG is set */
+     bitstatus = SET;
+   }
+   else
+   {
+     /* SPI_I2S_FLAG is reset */
+     bitstatus = RESET;
+   }
+   /* Return the SPI_I2S_FLAG status */
+   return  bitstatus;
 }

@@ -7,6 +7,8 @@
 
 #include "buffer.h"
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 void init_buffer(triple_ring_buffer* buffer)
 {
@@ -89,3 +91,14 @@ int fetchBuffer(triple_ring_buffer* buffer1, float* buffer2, float* buffer3, flo
 	return BUFFER_FAILED;
 }
 
+int randGyroReading(triplet* buffer){
+	buffer->x = 0;
+	buffer->y = 0;
+	buffer->z = 0;
+
+	srand(time(NULL));
+	buffer->x = (float)rand()/(float)(RAND_MAX/5);
+	buffer->y = (float)rand()/(float)(RAND_MAX/5);
+	buffer->z = (float)rand()/(float)(RAND_MAX/5);
+	return 0;
+}
